@@ -18,7 +18,7 @@
     [super viewDidLoad];
     
     _speechSynthesizer = [[AVSpeechSynthesizer alloc] init];
-    // Do any additional setup after loading the view, typically from a nib.
+    _speechSynthesizer.delegate = self;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -27,9 +27,23 @@
 }
 
 - (IBAction)speak:(id)sender {
+    AVSpeechSynthesisVoice *voice = [AVSpeechSynthesisVoice voiceWithLanguage:@"en-US"];
     AVSpeechUtterance *speechUtterance = [[AVSpeechUtterance alloc] initWithString:_textView.text];
+    speechUtterance.voice = voice;
     
     [_speechSynthesizer speakUtterance:speechUtterance];
+}
+
+- (void)speechSynthesizer:(AVSpeechSynthesizer *)synthesizer willSpeakRangeOfSpeechString:(NSRange)characterRange utterance:(AVSpeechUtterance *)utterance {    
+    NSMutableAttributedString *text = [[NSMutableAttributedString alloc] initWithString:_textView.text];
+    [text addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:characterRange];
+    _textView.attributedText = text;
+}
+
+- (void)speechSynthesizer:(AVSpeechSynthesizer *)synthesizer didFinishSpeechUtterance:(AVSpeechUtterance *)utterance {
+    NSMutableAttributedString *text = [[NSMutableAttributedString alloc] initWithAttributedString:_textView.attributedText];
+    [text removeAttribute:NSForegroundColorAttributeName range:NSMakeRange(0, [text length])];
+    _textView.attributedText = text;
 }
 
 @end
